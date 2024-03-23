@@ -1,50 +1,33 @@
 # eda.py
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+data = pd.read_excel('kayseri_kaza_verileri.xlsx')
 
-def load_data(filepath):
-    """Veri setini yükler ve ilk beş satırı döndürür."""
-    data = pd.read_excel(filepath)
-    return data.head()
+# info() her sütundaki kayıt sayısı, boş veya boş olmayan veriler, Veri türü,
+# veri kümesinin bellek kullanımı dahil olmak üzere veri türünü ve verilerle ilgili bilgileri anlamaya yardımcı olur
+# print(data.info())
 
+# nunique() her sütundaki birkaç benzersiz değere ve veri açıklamasına dayanarak , verilerdeki sürekli ve kategorik sütunları tanımlayabiliriz.
+# Tekrarlanan veriler daha fazla analize dayalı olarak işlenebilir veya kaldırılabilir
+# print(data.nunique())
 
-def get_basic_info(data):
-    """Veri seti hakkında temel bilgiler sağlar."""
-    info = data.info()
-    return info
+# isnull(), verilerdeki boş değerleri tanımlamak için tüm ön işleme adımlarında yaygın olarak kullanılmaktadır
+# data.isnull().sum() her sütundaki eksik kayıtların sayısını bulmak için kullanılır
+# print(data.isnull().sum())
 
+# Aşağıdaki kod, her sütundaki eksik değerlerin yüzdesini hesaplamaya yardımcı olur
+# print((data.isnull().sum()/(len(data)))*100)
 
-def get_missing_values(data):
-    """Veri setindeki eksik değerlerin sayısını döndürür."""
-    missing_values = data.isnull().sum()
-    return missing_values
+# Remove OLU SAYISI column from data
+# data = data.drop(['OLU SAYISI'], axis = 1)
+# print(data.info())
 
+# Some names of the variables are not relevant and not easy to understand. Some data may have data entry errors,
+# and some variables may need data type conversion. We need to fix this issue in the data.
+# print(data.AY.unique())
+# print(data.AY.nunique())
 
-def get_statistical_summary(data):
-    """Veri setinin istatistiksel özetini döndürür."""
-    summary = data.describe()
-    return summary
-
-
-def visualize_data(data, column):
-    """Belirtilen sütun için veri dağılımını görselleştirir."""
-    plt.figure(figsize=(10, 6))
-    sns.histplot(data[column], kde=True)
-    plt.title(f'Distribution of {column}')
-    plt.show()
-
-
-# Modülün doğrudan çalıştırılmasını engellemek için bu kontrolü ekleyebiliriz.
-if __name__ == "__main__":
-    print(get_basic_info(load_data('kayseri_kaza_verileri.xlsx')))
-    print("******************************************************")
-    print(get_missing_values(load_data('kayseri_kaza_verileri.xlsx')))
-    print("******************************************************")
-    print(get_missing_values(load_data('kayseri_kaza_verileri.xlsx')))
-    print("******************************************************")
-    print(visualize_data(load_data('kayseri_kaza_verileri.xlsx'),'AY'))
-
-    print("This module is intended to be imported rather than run directly.")
+#describe()– Provide a statistics summary of data belonging to numerical datatype such as int, float
+print(data.describe().T)
