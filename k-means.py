@@ -1,40 +1,47 @@
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
+import matplotlib.pyplot as plt
 
 # Veri setini yükle
-try:
-    # Dosya yolunu güncelle
-    file_path = r'C:\Users\fehmi\PycharmProjects\Big_Data101\kayseri_kaza_verileri.xlsx'
-    accident_data = pd.read_excel(file_path)
-    print("Veri seti başarıyla yüklendi.")
-except FileNotFoundError:
-    print("Belirtilen dosya bulunamadı.")
-    exit()
-except Exception as e:
-    print("Bir hata oluştu:", e)
-    exit()
+data = pd.read_excel('kayseri_kaza_verileri.xlsx')
 
-# Ön işleme için eksik verileri median ile doldurma
-imputer = SimpleImputer(strategy='median')
+# Gereksiz sütunları çıkar (örneğin, ID sütunu gibi)
+data = data.drop(['ID'], axis=1)
 
-# İlgili sütunları seçme ve eksik verileri doldurma
-selected_columns = accident_data[['Kaza Ciddiyet Seviyesi', 'AY', 'MAHALLE yoğunluğu']]
-selected_columns_imputed = imputer.fit_transform(selected_columns)
+# Kategorik sütunları kodlayın (gerekirse)
+# Örneğin, pd.get_dummies() veya LabelEncoder() gibi yöntemler kullanılabilir
 
-# Ölçeklendirme
+# Sayısal sütunları standartlaştırın
 scaler = StandardScaler()
-scaled_features = scaler.fit_transform(selected_columns_imputed)
+scaled_data = scaler.fit_transform(data)
 
-# K-means algoritması 3 küme ile uygulanıyor
+# K-means modelini oluştur
 kmeans = KMeans(n_clusters=3, random_state=42)
-clusters = kmeans.fit_predict(scaled_features)
 
-# Küme merkezlerini ve küme etiketlerini veri setine ekliyoruz
-accident_data['Cluster'] = clusters
+# Modeli eğitin
+kmeans.fit(scaled_data)
+
+# Küme merkezlerini al
 cluster_centers = kmeans.cluster_centers_
 
-# İlk beş sıradaki verileri ve küme merkezlerini gösterelim
-print("Veri setinin ilk beş sırası:\n", accident_data.head())
-print("\nKüme merkezleri:\n", cluster_centers)
+# Her gözlem için küme tahminlerini al
+cluster_labels = kmeans.labels_
+
+# Küme tahminlerini veri setine ekleyin
+data['Cluster'] = cluster_labels
+
+# Kaza ciddiyetini her küme için hesaplayın (örneğin, ortalama)
+cluster_impact = data.groupby('Cluster')['Kaza Ciddiyet Seviyesi'].mean()
+
+# Sonuçları görüntüle
+print(cluster_impact)
+
+# Kümeleme sonuçlarını görselleştirin (örneğin, Kaza Saati ve Kaza Ciddiyeti)
+plt.figure(figsize=(10, 6))
+plt.scatter(data['KAZA SAAT'], data['Kaza Ciddiyet Seviyesi'], c=cluster_labels, cmap='viridis')
+plt.xlabel('KAZA SAAT')
+plt.ylabel('Kaza Ciddiyet Seviyesi')
+plt.title('K-means Kümeleme Sonuçları')
+plt.colorbar(label='Küme')
+plt.show()
